@@ -14,11 +14,18 @@ Written by Marinna Martini, 12/22/2016
 # DSAM program changes – how to
 
 How to implement a change to the output command set, e.g. changing pinsToSet:
+
 1. Change the 0 and 1’s in the spreadsheet DSAMLookupDefinitions.xlsx
+
 2. Note the value in the Unsigned Word Decimal column for pinsToSet
+
 3. Change the value in the program, these are declared in setPinsOneStep, setPinsDilute1, setPinsDilute2, setPinsStandard or setPinsStartup, depending on the process being controlled.
+
 4. Make sure only one version of the DSAM source code is in the directory before opening the Arduino software (it like to cling to old versions)
+
 5. Compile and verify the code
+
 6. Load to the Arduino 
+
 7. The program automatically runs when loaded.  Use the serial monitor to check what is going on.
 
