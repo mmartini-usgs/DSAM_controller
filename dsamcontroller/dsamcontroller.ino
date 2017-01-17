@@ -17,9 +17,10 @@
     Written by Marinna Martini for the USGS in Woods Hole, 12/20/2016
 */
 
+// MM 1/17/2017 turn on dilute LED when in dilute mode!
 // MM 12/22/2016 make a change to the B Load output pinsToSet value
 
-const float version = 0.1;
+const float version = 0.2;
 // this code does not do anything about button bouncing except to use delays in places
 // if this setting below fails to work we will need to use interrupts or a more
 // sophisticated debounce technique
@@ -50,7 +51,6 @@ int buttonPins[16] = {0, 0, 0, 0, 0, 0, 0, 22, 23, 24, 25, 26, 27, 28, 29, 37};
 // the LED pins match the order of the buttons, since the LEDs will indicate a press
 // indicator pins, HIGH will mean an LED is ON
 int LEDPins[16] =    {0, 0, 0, 0, 0,  0,  0,  36, 35, 34, 33, 32, 31, 30, 53, 52};
-
 // the output pins - array length of 16 to match a word = 16 bits
 int outPins[16] =    {0, 0, 0, 0, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40};
 
@@ -65,9 +65,10 @@ int lsb[] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 // One Step:  this group of pin settings control processes that take only one step to accomplish
 word buttonSetsOneStep[] = {65247, 65263, 65271, 65275, 65375, 65391, 65399, 65403, 65439, 65455, 65463, 65467};
 word setPinsOneStep[] =    {64170, 64170, 63914, 64170, 63056, 64080, 64144, 63888, 64064, 64098, 63841, 64097};
+// we do not have a word to set the LED pins, as this is the same as the button pins
 // Dilute:  this group of pin settings controls dilute functions, which have intermediate steps
-// word buttonSetsDilute[] = {65438, 65454, 65462, 65466};
 // these are in the order of {discrete, septum, A, B}
+word setLEDsDilute[] = {65437, 65453, 65461, 65465};
 word setPinsDilute1[] = {64170, 64170, 63914, 64170}; // dilute process, 2 sec delay
 word setPinsDilute2[] = {64064, 64098, 63841, 64097}; // analyze process after dilutes
 const int diluteDelay = 2000; // 2 sec
@@ -238,6 +239,8 @@ void loop() {
 			// dilute can only execute if analyze in ON, and then it starts a sequence
 			// of events that returns to the original set state of the machine
 			// if analyze bit = 0, we are in analyze mode, OK to dilute
+			// turn on dilute LED to give feedback to user
+			digitalWrite(LEDPins[diluteBit], HIGH);
 			if (!bitRead(buttonWord, lsb[analyzeBit])) {
 				Serial.print("In analyze mode, will commence dilution ");
 				// which mode?  {discrete, septum, A, B}
@@ -265,7 +268,7 @@ void loop() {
 					pinsToSet = setPinsDilute1[i];
 					displayStates(buttonWord, pinsToSet);
 					setOutputPins(pinsToSet);
-					delay(diluteDelay); // the delay for dlute is plenty to absorb button bounces
+					delay(diluteDelay); // the delay for dilute is plenty to absorb button bounces
 					Serial.println("now to analyze");
 					pinsToSet = setPinsDilute2[i];
 					displayStates(buttonWord, pinsToSet);
@@ -278,6 +281,7 @@ void loop() {
 				buttonState = lastbuttonState;  // nothing will happen here, just restoring
 				delay(buttonBounceDelay);
 			}
+			digitalWrite(LEDPins[diluteBit], LOW);
 		} // end of decision tree for what process we are doing
     } // end of button == LOW
   } // end of scan pins for button change
